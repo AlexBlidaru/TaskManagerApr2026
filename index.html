@@ -693,15 +693,23 @@ let activeTaskId  = null;   // currently open modal task
    BOOT
 ══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-    loadData();
-    initWorkspaceSlicer();
-    initSlicer();
-    initResizers();
     initSortHeaders();
+    initResizers();
+    initSlicer();
+    initWorkspaceSlicer();
     autoAdjustNameCol();
-    renderTasks();
+    
+
+
+ sortSettings = { col: 2, dir: 1 }
+ // Default filter: Active
+    currentFilter = 'todo';
+    document.querySelectorAll('#statusSlicer .slicer-opt').forEach(b => b.classList.remove('active'));
+    document.querySelector('#statusSlicer .slicer-opt[data-value="todo"]').classList.add('active');
 
     document.getElementById('addTaskBtn').addEventListener('click', addTopTask);
+    loadData();
+    renderTasks();
 });
 
 /* ══════════════════════════════════════════════
@@ -1039,7 +1047,7 @@ function initWorkspaceSlicer() {
             // Reset status filter when switching workspace
             document.querySelectorAll('#statusSlicer .slicer-opt').forEach(b => b.classList.remove('active'));
             document.querySelector('#statusSlicer .slicer-opt[data-value="all"]').classList.add('active');
-            currentFilter = 'all';
+            currentFilter = 'todo';
             // Update title
             const title = document.getElementById('workspaceTitle');
             if (title) title.textContent = currentWorkspace === 'job' ? '💼 Job Tasks' : '🏠 Personale';
