@@ -6,127 +6,215 @@
 <title>Task Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="main-header">
-  <div class="header-content">
-    <div class="header-left">
-      <button id="addTaskBtn" class="btn-main">
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        Add Task
-      </button>
-      <h1 id="workspaceTitle">💼 Job Tasks</h1>
-      <button class="btn-backup" onclick="saveBackup()">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12l-4-4h2.5V3h3v5H12L8 12zM2 14h12v1.5H2V14z"/></svg>
-        Save Backup
-      </button>
-      <label class="btn-backup btn-load">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4l4 4H9.5v5h-3V8H4L8 4zM2 14h12v1.5H2V14z"/></svg>
-        Load Backup
-        <input type="file" id="backupFileInput" accept=".json" onchange="loadBackup(event)" style="display:none">
-      </label>
-    </div>
-    <div class="header-right">
-      <div class="slicer-wrap">
-        <span class="slicer-label">Workspace:</span>
-        <div class="slicer" id="workspaceSlicer">
-          <button class="slicer-opt active" data-value="job">💼 Job</button>
-          <button class="slicer-opt" data-value="personal">🏠 Personale</button>
-          <button class="slicer-opt" data-value="focus">🎯 Focus</button>
-        </div>
-      </div>
-      <div class="slicer-divider"></div>
-      <div class="slicer-wrap">
-        <span class="slicer-label">View:</span>
-        <div class="slicer" id="statusSlicer">
-          <button class="slicer-opt" data-value="all">All</button>
-          <button class="slicer-opt active" data-value="todo">Active</button>
-          <button class="slicer-opt" data-value="done">Done</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-logo">📋</div>
+    <h2 class="login-title">Task Manager</h2>
+    <p class="login-sub">Selectează utilizatorul</p>
 
-<!-- TABLE -->
-<main class="app-container">
-  <div class="grid-container">
-    <table id="taskTable">
-      <thead>
-        <tr>
-          <th class="resizable col-name" data-col="0">
-            <span class="th-inner">TASK NAME <span class="sort-arrow" data-col="0"></span></span>
-            <div class="resizer"></div>
-          </th>
-          <th class="resizable col-comment" data-col="1">
-            <span class="th-inner">COMMENT <span class="sort-arrow" data-col="1"></span></span>
-            <div class="resizer"></div>
-          </th>
-          <th class="col-details"></th>
-          <th class="resizable col-status" data-col="2">
-            <span class="th-inner">STATUS <span class="sort-arrow" data-col="2"></span></span>
-            <div class="resizer"></div>
-          </th>
-          <th class="resizable col-date" data-col="3">
-            <span class="th-inner">DUE DATE <span class="sort-arrow" data-col="3"></span></span>
-            <div class="resizer"></div>
-          </th>
-          <th class="col-timeleft">TIME LEFT</th>
-          <th class="col-drag"></th>
-          <th class="col-delete"></th>
-        </tr>
-      </thead>
-      <tbody id="taskBody"></tbody>
-    </table>
+    <!-- Step 1: dropdown user select -->
+    <div id="stepUser">
+      <select id="userSelect" class="user-select" onchange="onUserSelect(this.value)">
+        <option value="">— Alege utilizatorul —</option>
+      </select>
+    </div>
+
+    <!-- Step 2: PIN -->
+    <div id="stepPin" style="display:none">
+      <div class="pin-back-row">
+        <button class="pin-back-btn" onclick="backToUserSelect()">← Înapoi</button>
+        <p class="pin-label">Bună, <strong id="pinGreetName"></strong>! Introdu PIN-ul:</p>
+      </div>
+      <div class="pin-dots" id="pinDots">
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" onclick="pinKey('1')">1</button>
+        <button class="pin-key" onclick="pinKey('2')">2</button>
+        <button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button>
+        <button class="pin-key" onclick="pinKey('5')">5</button>
+        <button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button>
+        <button class="pin-key" onclick="pinKey('8')">8</button>
+        <button class="pin-key" onclick="pinKey('9')">9</button>
+        <button class="pin-key pin-del" onclick="pinKey('del')">⌫</button>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <div></div>
+      </div>
+      <p class="pin-error" id="pinError"></p>
+    </div>
   </div>
-</main>
+</div>
+
+<!-- ═══ APP SCREEN ═══ -->
+<div id="appScreen">
+
+  <!-- HEADER -->
+  <header class="main-header">
+    <div class="header-content">
+      <div class="header-left">
+        <button id="addTaskBtn" class="btn-main">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          Add Task
+        </button>
+        <h1 id="workspaceTitle">💼 Job Tasks</h1>
+        <button class="btn-backup" onclick="saveBackup()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12l-4-4h2.5V3h3v5H12L8 12zM2 14h12v1.5H2V14z"/></svg>
+          Save local Backup
+        </button>
+        <label class="btn-backup btn-load">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4l4 4H9.5v5h-3V8H4L8 4zM2 14h12v1.5H2V14z"/></svg>
+          Load Backup
+          <input type="file" id="backupFileInput" accept=".json" onchange="loadBackup(event)" style="display:none">
+        </label>
+      </div>
+      <div class="header-right">
+        <div class="slicer-wrap">
+          <span class="slicer-label">Workspace:</span>
+          <div class="slicer" id="workspaceSlicer">
+            <button class="slicer-opt active" data-value="job">💼 Job</button>
+            <button class="slicer-opt" data-value="personal">🏠 Personal</button>
+            <button class="slicer-opt" data-value="focus">🎯 Focus</button>
+          </div>
+        </div>
+        <div class="slicer-divider"></div>
+        <div class="slicer-wrap">
+          <span class="slicer-label">View:</span>
+          <div class="slicer" id="statusSlicer">
+            <button class="slicer-opt" data-value="all">All</button>
+            <button class="slicer-opt active" data-value="todo">Active</button>
+            <button class="slicer-opt" data-value="done">Done</button>
+            <button class="slicer-opt" data-value="nodelay">Active + Hide Delayed</button>
+          </div>
+        </div>
+        <div class="slicer-divider"></div>
+        <div class="user-badge-wrap">
+          <div class="header-avatar" id="headerUserAvatar">?</div>
+          <span class="header-username" id="headerUserName">—</span>
+          <button class="btn-logout" onclick="logout()" title="Logout">⏏</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SUPER USER BAR -->
+  <div id="superUserBar" class="su-bar" style="display:none">
+    <span class="su-bar-label">👁 View:</span>
+    <div id="superUserFilterBtns" class="su-filter-row"></div>
+    <!-- "All colleagues" button -->
+    <button class="su-filter-btn" id="btnAllColleagues" onclick="switchViewAll()">👥 All (nu functioneaza momentan)</button>
+  </div>
+
+  <!-- TABLE -->
+  <main class="app-container">
+    <div class="grid-container">
+      <table id="taskTable">
+        <thead>
+          <tr>
+            <th class="resizable col-name" data-col="0">
+              <span class="th-inner">TASK NAME <span class="sort-arrow" data-col="0"></span></span>
+              <div class="resizer"></div>
+            </th>
+            <th class="resizable col-comment" data-col="1">
+              <span class="th-inner">COMMENT <span class="sort-arrow" data-col="1"></span></span>
+              <div class="resizer"></div>
+            </th>
+            <th class="col-details"></th>
+            <th class="resizable col-status" data-col="2">
+              <span class="th-inner">STATUS <span class="sort-arrow" data-col="2"></span></span>
+              <div class="resizer"></div>
+            </th>
+            <th class="resizable col-date" data-col="3">
+              <span class="th-inner">DUE DATE <span class="sort-arrow" data-col="3"></span></span>
+              <div class="resizer"></div>
+            </th>
+            <th class="col-timeleft">TIME LEFT</th>
+            <th class="col-owner" id="colOwnerHeader" style="display:none">OWNER</th>
+            <th class="col-drag"></th>
+            <th class="col-delete"></th>
+          </tr>
+        </thead>
+        <tbody id="taskBody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
 
 <!-- DETAILS MODAL -->
 <div id="detailsOverlay" class="details-overlay" onclick="overlayClick(event)">
-  <div class="details-modal" id="detailsModal">
+  <div class="details-modal">
     <div class="dm-header">
       <div class="dm-title" id="dmTitle">Task Details</div>
       <button class="dm-close" onclick="closeDetailsModal()">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </button>
     </div>
     <div class="dm-body">
       <div class="dm-col">
         <div class="dm-section">
           <div class="dm-section-title">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M14 1H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h2v3l4-3h6a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/></svg>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M14 1H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h2v3l4-3h6a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
+            </svg>
             Comment History
           </div>
-          <div class="comment-history" id="commentHistory"><p class="no-history">No comments yet.</p></div>
+          <div class="comment-history" id="commentHistory">
+            <p class="no-history">No comments yet.</p>
+          </div>
           <div class="new-comment-row">
-            <textarea id="newCommentInput" class="new-comment-input" placeholder="Add a comment… (Ctrl+Enter)" rows="2" onkeydown="commentKeydown(event)"></textarea>
+            <textarea id="newCommentInput" class="new-comment-input"
+              placeholder="Add a comment… (Ctrl+Enter)" rows="2"
+              onkeydown="commentKeydown(event)"></textarea>
             <button class="btn-add-comment" onclick="addComment()">
-              <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+              <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
               Add
             </button>
           </div>
         </div>
         <div class="dm-section">
           <div class="dm-section-title">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v12H2V2zm2 4h8M4 8h8M4 11h5"/></svg>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 2h12v12H2V2zm2 4h8M4 8h8M4 11h5"/>
+            </svg>
             Detailed Notes
           </div>
-          <textarea id="dmNotes" class="dm-notes" placeholder="Write detailed notes, context, links…" rows="6" oninput="saveNotes()"></textarea>
+          <textarea id="dmNotes" class="dm-notes"
+            placeholder="Write detailed notes, context, links…"
+            rows="6" oninput="saveNotes()"></textarea>
         </div>
       </div>
       <div class="dm-col">
         <div class="dm-section">
           <div class="dm-section-title">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3h14v10H1V3zm2 8l3-3 2 2 3-4 4 5H3z"/></svg>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M1 3h14v10H1V3zm2 8l3-3 2 2 3-4 4 5H3z"/>
+            </svg>
             Photos &amp; Files
           </div>
           <div class="photos-grid" id="photosGrid"></div>
           <label class="btn-upload">
-            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-            Add Photo / File
-            <input type="file" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" onchange="handleFiles(event)" style="display:none">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+              <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+            Add File <span style="font-size:15px;opacity:.6;font-weight:400">(Max 1.5MB/file. Fisierele se pierd la stergere cache browser. Se pot recupera doar daca s-a descarcat backup Local)</span>
+            <input type="file" id="fileInput" multiple
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+              onchange="handleFiles(event)" style="display:none">
           </label>
         </div>
       </div>
@@ -134,8 +222,16 @@
   </div>
 </div>
 
+<!-- BIRD ANIMATION CANVAS -->
+<canvas id="birdCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:9990;display:none"></canvas>
+
 <!-- TOAST -->
 <div id="tm-toast"></div>
+
+<!-- WELLNESS MODAL -->
+<div id="wellnessOverlay" class="wellness-overlay" style="display:none">
+  <div class="wellness-box" id="wellnessBox"></div>
+</div>
 
 <script src="script.js"></script>
 </body>
