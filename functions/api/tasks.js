@@ -1,9 +1,19 @@
+/**
+ * Cloudflare Pages Function — /api/tasks
+ * Route: functions/api/tasks.js
+ * KV Namespace binding: TASKS_STORAGE
+ */
+
 export async function onRequestGet(context) {
-  const url   = new URL(context.request.url);
-  const ws    = url.searchParams.get('workspace') || 'job';
-  const key   = ws === 'personal' ? 'tasks_personal' : 'tasks_job';
-  const value = await context.env.TASKS_STORAGE.get(key);
-  return new Response(value || '[]', {
+  const url  = new URL(context.request.url);
+  const ws   = url.searchParams.get('workspace') || 'job';
+  const user = url.searchParams.get('user')      || 'default';
+  
+  // Construim cheia unică per utilizator și workspace
+  const key  = `tasks_${user}_${ws}`;
+  
+  const val  = await context.env.TASKS_STORAGE.get(key);
+  return new Response(val || '[]', {
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
@@ -14,25 +24,20 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
   const url  = new URL(context.request.url);
   const ws   = url.searchParams.get('workspace') || 'job';
-  const key  = ws === 'personal' ? 'tasks_personal' : 'tasks_job';
+  const user = url.searchParams.get('user')      || 'default';
+  
+  const key  = `tasks_${user}_${ws}`;
   const body = await context.request.text();
-  try { JSON.parse(body); } catch(e) {
+  
+  try { 
+    JSON.parse(body); 
+  } catch(e) {
     return new Response('Invalid JSON', { status: 400 });
   }
+  
   await context.env.TASKS_STORAGE.put(key, body);
   return new Response('OK', {
     status: 200,
     headers: { 'Access-Control-Allow-Origin': '*' },
-  });
-}
-
-export async function onRequestOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin':  '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
   });
 }
