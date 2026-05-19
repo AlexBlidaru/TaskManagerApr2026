@@ -31,6 +31,12 @@ let sortSettings={col:2,dir:1};
 let activeTaskId=null;
 let dragId=null;
 let currentUser=null;
+try {
+  const remembered = JSON.parse(localStorage.getItem('tm_session') || 'null');
+  if (remembered) {
+    currentUser = USERS.find(u => u.id === remembered.id && u.pin === remembered.pin) || null;
+  }
+} catch(e) {}
 let viewingUserId=null;   // null = own tasks; 'all' = all colleagues; else userId
 let _pinBuffer='';
 let _saveTimer=null, _syncing=false;
@@ -108,7 +114,7 @@ function submitPin(){
   const selId=document.getElementById('userSelect').value;
   const u=USERS.find(u=>u.id===selId); if(!u) return;
   if(u.pin===_pinBuffer){
-    currentUser=u;
+    currentUser=u; // <--- Această linie se asigură că starea globală este setată corect!
     localStorage.setItem('tm_session',JSON.stringify({id:u.id,pin:u.pin}));
     bootApp();
   } else {
@@ -263,10 +269,19 @@ async function switchViewAll(){
 
 /* ══ STORAGE ═══════════════════════════════════ */
 function activeUserId(){
-  if(currentUser.superUser&&viewingUserId&&viewingUserId!=='all') return viewingUserId;
-  return currentUser.id;
+  if (currentUser && currentUser.superUser && viewingUserId && viewingUserId !== 'all') {
+    return viewingUserId;
+  }
+  if (currentUser) {
+    return currentUser.id;
+  }
+  // Fallback de siguranță în caz că sesiunea s-a încărcat greu
+  try {
+    const s = JSON.parse(localStorage.getItem('tm_session') || 'null');
+    if (s) return s.id;
+  } catch(e) {}
+  return 'default';
 }
-
 function setSyncStatus(state){
   let badge=document.getElementById('sync-badge');
   if(!badge){
