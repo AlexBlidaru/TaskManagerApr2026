@@ -6,7 +6,7 @@
 const USERS = [
   { id:'user1',     name:'Alex B',     pin:'1995', superUser:false  },
   { id:'user2',     name:'Giani C',    pin:'0000', superUser:true  },
-  { id:'user3',     name:'user3',      pin:'0000', superUser:false },
+  { id:'user3',     name:'MonelV',      pin:'1985', superUser:false },
   { id:'user4',     name:'user4',      pin:'0000', superUser:false },
   { id:'user5',     name:'user5',      pin:'0000', superUser:false },
   { id:'user6',     name:'user6',      pin:'0000', superUser:false },
