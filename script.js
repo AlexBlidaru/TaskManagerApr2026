@@ -8,7 +8,7 @@ const USERS = [
   { id:'user2',     name:'Giani C',    pin:'0000', superUser:true  },
   { id:'user3',     name:'MonelV',      pin:'1985', superUser:false },
   { id:'user4',     name:'RoxanaS',      pin:'2121', superUser:false },
-  { id:'user5',     name:'user5',      pin:'0000', superUser:false },
+  { id:'user5',     name:'AndreiC',      pin:'4321', superUser:false },
   { id:'user6',     name:'user6',      pin:'0000', superUser:false },
     { id:'user6',     name:'user7',      pin:'0000', superUser:false },
     { id:'user6',     name:'user8',      pin:'0000', superUser:false },
